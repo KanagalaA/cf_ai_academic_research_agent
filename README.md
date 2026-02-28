@@ -2,6 +2,8 @@
 
 > A **Stateful Academic Research Planning Agent** built on Cloudflare's AI platform stack.
 
+🌐 **Live demo:** https://cf-ai-research-agent-frontend.pages.dev/
+
 Instead of answering one-off questions, this agent collaborates with you across sessions to **scope, plan, and conduct full literature reviews** — powered by Workers AI (Llama 3.3), Durable Objects for persistent state, and arXiv for real academic sources.
 
 ---
