@@ -1,312 +1,274 @@
-You are helping me build a production-quality project for the **Cloudflare AI Internship optional assignment**.
+# PROMPTS.md
 
-This project MUST be built using **Cloudflare’s Agents platform** and follow their requirements exactly.
-
-The repository MUST be named:
-
-```
-cf_ai_academic_research_agent
-```
-
-The project must demonstrate:
-
-* Cloudflare Workers
-* Cloudflare Agents SDK
-* Durable Objects (persistent state)
-* Workers AI (Llama model)
-* Workflow / scheduled task
-* Tool usage (external API)
-* Frontend chat UI (Cloudflare Pages)
-* Full documentation
-* PROMPTS.md containing AI prompts used
-
-This project should feel like a **mini SaaS AI product**, not a toy demo.
+> AI prompts used to design and generate the `cf_ai_academic_research_agent` project.
+> Required by Cloudflare internship assignment guidelines.
 
 ---
 
-# PROJECT OVERVIEW
+## 1. Architecture Design Prompt
 
-We are building a **Stateful Academic Research Planning Agent**.
-
-Instead of answering one-off questions, this agent:
-
-* collaborates with the user to scope research
-* asks clarifying questions
-* creates a research plan
-* gathers academic sources
-* summarizes papers
-* stores research workspaces persistently
-* allows users to continue research over time
-* runs background updates
-
-This aligns with Cloudflare’s vision of **stateful AI agents**.
-
----
-
-# CORE USER FLOW
-
-1. User opens web app and creates a research workspace.
-2. User enters research topic.
-3. Agent asks clarifying questions.
-4. Agent generates research plan.
-5. Agent gathers academic sources using tools.
-6. Agent summarizes sources using Workers AI.
-7. Agent stores everything in persistent state.
-8. User can return later and continue research.
-9. Background job periodically refreshes research.
-
----
-
-# REQUIRED CLOUDFLARE STACK
-
-We MUST use these Cloudflare technologies.
-
-## 1) Cloudflare Workers
-
-Used for:
-
-* API routes
-* routing frontend → agent
-* calling Workers AI
-
-## 2) Cloudflare Agents SDK
-
-The backend MUST be built using the **Agents framework**.
-
-Create a class:
+**Used to:** Design the overall system architecture before writing any code.
 
 ```
-ResearchAgent extends AIChatAgent
-```
+You are a Cloudflare platform expert helping design a production-quality AI agent.
 
-The agent must:
+I need to build a "Stateful Academic Research Planning Agent" using:
+- Cloudflare Workers (routing)
+- Durable Objects (persistent state per workspace)
+- Workers AI with Llama 3.3 (LLM calls)
+- arXiv public API (external tool)
+- KV Namespace (workspace index)
+- Cron triggers (daily refresh)
+- React frontend (chat UI)
 
-* persist conversations
-* maintain research workspaces
-* call tools
-* orchestrate workflows
+The agent should:
+1. Ask clarifying questions when given a research topic
+2. Generate a structured research plan
+3. Search arXiv for relevant papers
+4. Summarize papers using Workers AI
+5. Allow ongoing Q&A using stored context
+6. Persist all state so users can return later
 
-## 3) Durable Objects (via Agents)
-
-Each research workspace must be stored persistently.
-
-Persist:
-
-* research topic
-* clarifying answers
-* research plan
-* sources gathered
-* summaries
-* chat history
-
-## 4) Workers AI (LLM)
-
-Use Llama model via:
-
-```
-@cf/meta/llama-3-8b-instruct
-```
-
-Use LLM for:
-
-* asking clarifying questions
-* generating research plan
-* summarizing papers
-* answering follow-up questions
-
-## 5) External Tool Integration
-
-Agent must call at least one external API.
-
-Use:
-
-* arXiv API for academic paper search
-* fetch paper metadata and abstracts
-
-This satisfies “tool usage”.
-
-## 6) Scheduled Workflow
-
-Add a cron job that runs daily.
-
-Background job:
-
-* refreshes saved research topics
-* fetches new papers
-* updates summaries
-
-This satisfies “workflow/coordination”.
-
-## 7) Cloudflare Pages Frontend
-
-Build a simple React chat interface:
-
-* input box
-* message history
-* send messages to Worker API
-* display streaming responses
-
----
-
-# BACKEND ARCHITECTURE
-
-Create the following structure:
-
-```
-/workers
-  /src
-    index.ts              (Worker entry)
-    agent.ts              (ResearchAgent class)
-    tools/
-        arxiv.ts          (arXiv search tool)
-    workflows/
-        refreshResearch.ts
+Design the architecture: what does each Cloudflare service do,
+how do they communicate, what data flows where?
+Give me a text-based architecture diagram.
 ```
 
 ---
 
-# AGENT BEHAVIOR SPEC
+## 2. Agent Behavior Spec Prompt
 
-The agent must implement these phases:
-
-## Phase 1 — Workspace creation
-
-When a user first sends a topic:
-Agent should ask clarifying questions such as:
-
-* research level (undergrad/grad/etc)
-* purpose (paper, proposal, survey)
-* focus areas
-* time constraints
-
-Store answers.
-
-## Phase 2 — Research plan generation
-
-Agent generates:
-
-* key subtopics
-* search keywords
-* research outline
-
-Store plan in Durable Object state.
-
-## Phase 3 — Source gathering
-
-Agent uses arXiv API tool to:
-
-* search papers
-* fetch titles + abstracts
-* store top results
-
-## Phase 4 — Summarization
-
-For each paper:
-
-* summarize abstract using Workers AI
-* store summaries
-
-## Phase 5 — Ongoing conversation
-
-User can ask:
-
-* “continue research”
-* “summarize progress”
-* “add more sources”
-
-Agent loads stored state and continues.
-
----
-
-# ARXIV TOOL REQUIREMENTS
-
-Implement tool function:
+**Used to:** Define the agent's multi-phase behavior before implementing it.
 
 ```
-searchArxiv(query: string) -> returns papers
-```
+Design the behavior for a stateful research agent as a Durable Object class.
 
-Use arXiv public API via HTTP fetch.
+The agent has 5 phases:
+1. Clarification — ask 4 targeted questions (level, purpose, focus, timeline)
+2. Planning — generate JSON research plan with subtopics/keywords/outline
+3. Gathering — call arXiv search tool with plan keywords
+4. Summarizing — summarize each paper abstract with LLM
+5. Ongoing — Q&A with stored research context
 
-Return:
+For each phase, define:
+- What triggers the transition to this phase
+- What state is read and written
+- What LLM prompt is used
+- What the user sees
 
-* title
-* authors
-* abstract
-* link
-* published date
-
----
-
-# CRON WORKFLOW
-
-Daily job:
-
-* loop through saved research workspaces
-* search arXiv for new papers
-* summarize new results
-* update workspace memory
-
----
-
-# FRONTEND REQUIREMENTS
-
-React chat UI with:
-
-* message list
-* text input
-* send button
-* call Worker endpoint `/api/chat`
-* display streaming responses
-
-Keep UI simple but clean.
-
----
-
-# README REQUIREMENTS
-
-README.md must include:
-
-* project overview
-* architecture diagram (text description OK)
-* Cloudflare services used
-* setup instructions
-* deployment instructions
-* screenshots
-
----
-
-# PROMPTS.MD REQUIREMENTS
-
-Create PROMPTS.md containing:
-
-* prompts used to generate code
-* prompts used to design architecture
-* prompts used to design agent behavior
-
-This is required by Cloudflare.
-
----
-
-# DEPLOYMENT
-
-Project must be deployable with:
-
-```
-npm install
-npx wrangler deploy
+Also define special command handlers for "ongoing" phase:
+- "summarize progress"
+- "show sources"  
+- "add more sources"
 ```
 
 ---
 
-# QUALITY BAR
+## 3. Durable Object Implementation Prompt
 
-Code must be:
+**Used to:** Generate the ResearchAgent Durable Object class.
 
-* clean
-* modular
-* well commented
-* TypeScript
-* production style
+```
+Write a TypeScript Cloudflare Durable Object class called ResearchAgent.
 
-This is a portfolio project for a Cloudflare internship.
+Requirements:
+- State interface: WorkspaceState with fields for topic, phase, clarifications (Record<string,string>),
+  plan (subtopics/keywords/outline), sources (ArxivPaper[]), summaries (Record<string,string>),
+  chatHistory (ChatMessage[]), clarificationStep (number)
+
+- loadState() / saveState() methods using this.state.storage
+- Also save to KV namespace for workspace listing
+
+- callLLM() method that calls env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast')
+- generateResearchPlan() that returns JSON-structured plan from LLM
+- summarizePaper() that writes 2-3 sentence summaries
+
+- Phase handlers: handleClarification(), handlePlanning(), handleOngoing()
+- gatherSources() that calls searchArxiv() with plan keywords and deduplicates results
+
+- fetch() handler routing: GET /state returns JSON state, POST /chat processes messages
+
+Make it production-quality with error handling and clear comments.
+TypeScript strict mode.
+```
+
+---
+
+## 4. arXiv Tool Prompt
+
+**Used to:** Generate the external API tool integration.
+
+```
+Write a TypeScript module for a Cloudflare Worker that searches the arXiv public API.
+
+Function signature:
+  searchArxiv(query: string, maxResults: number): Promise<ArxivPaper[]>
+
+ArxivPaper interface:
+  id, title, authors[], abstract, link, publishedDate, categories[]
+
+Requirements:
+- Use arXiv API v1: https://export.arxiv.org/api/query
+- Parse Atom XML response without a DOM parser (string-based parsing for Workers)
+- Handle HTTP errors gracefully (return empty array)
+- Clean whitespace and XML entities from text fields
+- Extract the alternate link for each paper
+
+No API key required — this is a public API.
+Add clear documentation comments.
+```
+
+---
+
+## 5. Worker Entry Point + Routing Prompt
+
+**Used to:** Generate the Worker fetch handler and routing logic.
+
+```
+Write a Cloudflare Worker entry point (index.ts) that:
+
+1. Exports the ResearchAgent Durable Object class
+2. Handles CORS (OPTIONS preflight + headers on all responses)
+3. Routes POST /api/chat to the appropriate Durable Object instance
+   - Parse workspaceId from body (or generate new UUID)
+   - Use env.RESEARCH_AGENT.idFromName(workspaceId)
+   - Forward request to Durable Object
+   - Return response with X-Workspace-Id header
+4. Routes GET /api/workspace/:id to fetch Durable Object state
+5. Routes GET /api/workspaces to list all workspace keys from KV
+6. Implements the scheduled() handler that calls refreshAllResearch()
+
+Env interface: RESEARCH_AGENT (DurableObjectNamespace), AI (Ai), RESEARCH_KV (KVNamespace)
+TypeScript strict mode. Include error handling.
+```
+
+---
+
+## 6. Daily Refresh Workflow Prompt
+
+**Used to:** Generate the cron-triggered background workflow.
+
+```
+Write a Cloudflare Workers scheduled workflow function called refreshAllResearch(env).
+
+It should:
+1. List all workspace keys from KV using list({ prefix: 'workspace:' })
+2. For each workspace, call refreshWorkspace(env, workspaceId)
+3. refreshWorkspace should:
+   a. Fetch current workspace state via GET to the Durable Object
+   b. Skip if phase !== 'ongoing'
+   c. Search arXiv for new papers using the workspace topic
+   d. Find papers not already in workspace.sources (by ID)
+   e. Post a chat message to the Durable Object with the new paper list
+4. Log progress and handle errors per-workspace (don't let one failure stop others)
+
+This runs daily at 2am UTC via cron: "0 2 * * *"
+```
+
+---
+
+## 7. React Chat UI Prompt
+
+**Used to:** Generate the frontend chat interface.
+
+```
+Build a production-quality React chat UI in TypeScript for an academic research agent.
+
+Design requirements:
+- Dark theme (#0f172a background, orange (#f97316) as accent color)
+- Collapsible sidebar with workspace ID and command reference
+- Phase progress indicator showing: Scoping → Planning → Searching → Reading → Active
+- Chat message bubbles: user messages right-aligned orange, assistant messages left-aligned dark
+- Auto-scrolling message list
+- Textarea input that auto-expands with Shift+Enter for newlines, Enter to send
+- Quick action chip buttons that appear in "ongoing" phase
+- Animated typing indicator (3 pulsing dots)
+- Paper count displayed in the phase indicator
+- localStorage to persist workspaceId across page refreshes
+
+API integration:
+- POST to VITE_API_URL/api/chat with { workspaceId, message }
+- Capture X-Workspace-Id response header on first message
+- Update phase and sourceCount from response JSON
+
+No external UI library — pure React + inline styles.
+```
+
+---
+
+## 8. PhaseIndicator Component Prompt
+
+**Used to:** Generate the research phase visualization component.
+
+```
+Create a React component PhaseIndicator that visualizes research workflow progress.
+
+Props: { phase: Phase, sourceCount: number }
+
+Phases in order: clarification, planning, gathering, summarizing, ongoing
+Each has an icon and label.
+
+Visual design:
+- Horizontal strip with chevron separators between phases
+- Current phase: orange highlight with orange border
+- Completed phases: green tint with checkmark
+- Future phases: muted gray
+- Paper count shown on the right when > 0
+- Horizontally scrollable on mobile
+
+Pure React + inline styles, no dependencies.
+```
+
+---
+
+## 9. wrangler.toml Configuration Prompt
+
+**Used to:** Generate the correct Cloudflare Worker configuration.
+
+```
+Write a wrangler.toml for a Cloudflare Worker with:
+- Name: cf-ai-academic-research-agent
+- TypeScript entry: src/index.ts
+- compatibility_date: 2024-01-01
+- nodejs_compat flag enabled
+
+Bindings:
+- Workers AI binding named AI
+- KV namespace binding named RESEARCH_KV (with placeholder IDs)
+- Durable Object binding named RESEARCH_AGENT pointing to ResearchAgent class
+
+Durable Object migration: tag v1, new_classes: [ResearchAgent]
+
+Cron trigger: 0 2 * * * (daily at 2am UTC)
+Build command: npm run build
+
+Include comments explaining each section.
+```
+
+---
+
+## 10. README Prompt
+
+**Used to:** Generate the project documentation.
+
+```
+Write a comprehensive README.md for a Cloudflare Workers project called cf_ai_academic_research_agent.
+
+Include:
+1. Project overview (stateful AI research agent)
+2. ASCII architecture diagram showing: Pages frontend → Worker → Durable Object → Workers AI + arXiv + KV
+3. Table of Cloudflare services and how each is used
+4. Step-by-step setup instructions (clone → install → create KV → deploy worker → configure frontend → deploy pages)
+5. Usage guide with example conversation flow
+6. Project directory structure
+7. Key design decisions section (why Durable Objects, why Llama 3.3 FP8, why arXiv)
+
+Format: clean GitHub-flavored Markdown with emoji headers.
+Targeted at: Cloudflare internship reviewers who will evaluate architecture decisions.
+```
+
+---
+
+*These prompts were used iteratively, with refinements based on Workers-specific constraints
+(e.g., no DOM parser available, arXiv Atom XML must be parsed with string matching),
+TypeScript strict mode requirements, and Cloudflare Durable Object API specifics.*
