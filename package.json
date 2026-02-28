@@ -1,0 +1,15 @@
+{
+  "name": "cf_ai_academic_research_agent",
+  "version": "1.0.0",
+  "description": "Stateful Academic Research Planning Agent built on Cloudflare Workers, Durable Objects, and Workers AI",
+  "scripts": {
+    "dev:worker": "cd workers && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd workers && npm install && cd ../frontend && npm install",
+    "deploy:worker": "cd workers && npx wrangler deploy",
+    "deploy:frontend": "cd frontend && npm run build",
+    "build": "cd workers && npm run build && cd ../frontend && npm run build"
+  },
+  "keywords": ["cloudflare", "workers", "ai", "durable-objects", "research-agent"],
+  "license": "MIT"
+}

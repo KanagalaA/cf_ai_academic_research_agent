@@ -1,0 +1,19 @@
+{
+  "name": "cf-ai-academic-research-agent-worker",
+  "version": "2.0.0",
+  "description": "Cloudflare Worker backend for the Academic Research Agent",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20240320.4",
+    "agents": "^0.0.79"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "wrangler": "^3.40.0"
+  }
+}

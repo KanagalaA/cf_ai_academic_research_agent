@@ -1,0 +1,32 @@
+name = "cf-ai-academic-research-agent"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Workers AI binding
+[ai]
+binding = "AI"
+
+# KV Namespace for workspace index
+[[kv_namespaces]]
+binding = "RESEARCH_KV"
+id = "0d761876e2a744faa70736702ac6f682"
+preview_id = "37a67f42b31546d1942ac6867c07e666"
+
+# Durable Objects binding — ResearchAgent now extends Agent from the Agents SDK
+[[durable_objects.bindings]]
+name = "ResearchAgent"
+class_name = "ResearchAgent"
+
+# v1 already applied in production - do not remove or change
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ResearchAgent"]
+
+
+# Cron trigger — daily research refresh at 2am UTC
+[triggers]
+crons = ["0 2 * * *"]
+
+[build]
+command = "npm run build"
